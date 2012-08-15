@@ -20,7 +20,7 @@ struct vector {
 };
 
 float get_random() {
-	return ((float)rand() / RAND_MAX - 0.5f) * 2;
+	return ((float) rand() / RAND_MAX - 0.5f) * 2;
 }
 
 ulong make_color(u_char alpha, u_char red, u_char green, u_char blue) {
@@ -47,7 +47,7 @@ int main() {
 	int count = 200;
 	float minimumDistance = 100;
 	float targetFps = 1000 / 60;
-	float topChange = 0.2f;
+	float topChange = 0.1f;
 	float topSpeed = 0.5f;
 
 	// Create our display
@@ -133,8 +133,9 @@ int main() {
 				double distance = sqrt(pow(distanceX, 2) + pow(distanceY, 2));
 
 				if (distance < minimumDistance) {
-					XSetForeground(dpy, g, make_color(0, distance
-							/ minimumDistance * 255, 0, 0));
+					u_char value = (u_char) floor(distance / minimumDistance
+							* 255);
+					XSetForeground(dpy, g, make_color(0, 255 - value, 0, 0));
 					XDrawLine(dpy, double_buffer, g, pointA.x, pointA.y,
 							pointB.x, pointB.y);
 				}
