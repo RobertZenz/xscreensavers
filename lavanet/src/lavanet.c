@@ -43,7 +43,7 @@ float sign(float x) {
 	return val - (x < 0);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	int count = 200;
 	float minimumDistance = 100;
 	float targetFps = 1000 / 60;
@@ -54,9 +54,18 @@ int main() {
 	Display *dpy;
 	dpy = XOpenDisplay(getenv("DISPLAY"));
 
-	// Get the root window
+ 	// Get the root window
 	Window root;
-	root = DefaultRootWindow(dpy);
+	if(argc > 1) {
+		int screen = DefaultScreen(dpy);
+		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),
+				24, 48, 640, 640, 1,
+				BlackPixel(dpy, screen), WhitePixel(dpy, screen));
+		XSelectInput(dpy, root, ExposureMask | KeyPressMask);
+		XMapWindow(dpy, root);
+	} else {
+		root = DefaultRootWindow(dpy);
+	}
 
 	// Get the window attributes
 	XWindowAttributes wa;
