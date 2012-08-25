@@ -26,6 +26,11 @@ struct vector {
 
 // Global, sorry.
 int debug = FALSE;
+int count = 200;
+float minimumDistance = 100;
+float targetFps = 1000 / 60;
+float topChange = 0.1f;
+float topSpeed = 0.5f;
 
 float get_random() {
 	return ((float) rand() / RAND_MAX - 0.5f) * 2;
@@ -58,12 +63,6 @@ void parse_arguments(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-	int count = 200;
-	float minimumDistance = 100;
-	float targetFps = 1000 / 60;
-	float topChange = 0.1f;
-	float topSpeed = 0.5f;
-
 	parse_arguments(argc, argv);
 
 	// Create our display
