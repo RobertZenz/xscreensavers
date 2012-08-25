@@ -22,6 +22,14 @@ struct vector {
 	float y;
 };
 
+struct line {
+	float startX;
+	float startY;
+	float endX;
+	float endY;
+	float value;
+};
+
 // Global, sorry.
 int debug = FALSE;
 int count = 200;
@@ -49,6 +57,41 @@ ulong make_color(u_char red, u_char green, u_char blue) {
 float sign(float x) {
 	float val = x > 0;
 	return val - (x < 0);
+}
+
+void move_points(struct vector *points, struct vector *velocities, XWindowAttributes wa) {
+	int idx;
+	for (idx = 0; idx < count; idx++) {
+		struct vector *velocity = &velocities[idx];
+
+		velocity->x += get_random() * topChange;
+		velocity->y += get_random() * topChange;
+
+		if (abs(velocity->x) > topSpeed) {
+			velocity->x = topSpeed * sign(velocity->x);
+		}
+
+		if (abs(velocity->y) > topSpeed) {
+			velocity->y = topSpeed * sign(velocity->y);
+		}
+
+		struct vector *point = &points[idx];
+		point->x += velocity->x;
+		point->y += velocity->y;
+
+		if (point->x < 0) {
+			point->x = wa.width;
+		}
+		if (point->x > wa.width) {
+			point->x = 0;
+		}
+		if (point->y < 0) {
+			point->y = wa.height;
+		}
+		if (point->y > wa.height) {
+			point->y = 0;
+		}
+	}
 }
 
 void parse_arguments(int argc, char *argv[]) {
@@ -109,38 +152,7 @@ int main(int argc, char *argv[]) {
 		XSetForeground(dpy, g, BLACK);
 		XFillRectangle(dpy, double_buffer, g, 0, 0, wa.width, wa.height);
 
-		// Move
-		for (counter = 0; counter < count; counter++) {
-			struct vector *velocity = &velocities[counter];
-
-			velocity->x += get_random() * topChange;
-			velocity->y += get_random() * topChange;
-
-			if (abs(velocity->x) > topSpeed) {
-				velocity->x = topSpeed * sign(velocity->x);
-			}
-
-			if (abs(velocity->y) > topSpeed) {
-				velocity->y = topSpeed * sign(velocity->y);
-			}
-
-			struct vector *point = &points[counter];
-			point->x += velocity->x;
-			point->y += velocity->y;
-
-			if (point->x < 0) {
-				point->x = wa.width;
-			}
-			if (point->x > wa.width) {
-				point->x = 0;
-			}
-			if (point->y < 0) {
-				point->y = wa.height;
-			}
-			if (point->y > wa.height) {
-				point->y = 0;
-			}
-		}
+		move_points(points, velocities, wa);
 
 		// Draw
 		for (counter = 0; counter < count; counter++) {
