@@ -7,17 +7,25 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <X11/Xlib.h>
 
 #include "vroot.h"
 
+
+#define FALSE 0
+#define TRUE 1
 #define BLACK 0x000000
+
 
 struct vector {
 	float x;
 	float y;
 };
+
+// Global, sorry.
+int debug = FALSE;
 
 float get_random() {
 	return ((float) rand() / RAND_MAX - 0.5f) * 2;
@@ -40,6 +48,15 @@ float sign(float x) {
 	return val - (x < 0);
 }
 
+void parse_arguments(int argc, char *argv[]) {
+	int idx;
+	for(idx = 1; idx < argc; idx++) {
+		if(strcasecmp(argv[idx], "--debug") == 0) {
+			debug = TRUE;
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 	int count = 200;
 	float minimumDistance = 100;
@@ -47,20 +64,23 @@ int main(int argc, char *argv[]) {
 	float topChange = 0.1f;
 	float topSpeed = 0.5f;
 
+	parse_arguments(argc, argv);
+
 	// Create our display
 	Display *dpy;
 	dpy = XOpenDisplay(getenv("DISPLAY"));
 
 	// Get the root window
 	Window root;
-	if (argc > 1) {
+	if (debug == FALSE) {
+		// Get the root window
+		root = DefaultRootWindow(dpy);
+	} else {
+		// Let's create our own window.
 		int screen = DefaultScreen(dpy);
 		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen), 24, 48, 640,
 				640, 1, BlackPixel(dpy, screen), WhitePixel(dpy, screen));
-		XSelectInput(dpy, root, ExposureMask | KeyPressMask);
 		XMapWindow(dpy, root);
-	} else {
-		root = DefaultRootWindow(dpy);
 	}
 
 	// Get the window attributes
