@@ -111,44 +111,47 @@ int main(int argc, char *argv[]) {
 
 		// Move
 		for (counter = 0; counter < count; counter++) {
-			velocities[counter].x += get_random() * topChange;
-			velocities[counter].y += get_random() * topChange;
+			struct vector *velocity = &velocities[counter];
 
-			if (abs(velocities[counter].x) > topSpeed) {
-				velocities[counter].x = topSpeed * sign(velocities[counter].x);
-			}
+			velocity->x += get_random() * topChange;
+			velocity->y += get_random() * topChange;
 
-			if (abs(velocities[counter].y) > topSpeed) {
-				velocities[counter].y = topSpeed * sign(velocities[counter].y);
+			if (abs(velocity->x) > topSpeed) {
+				velocity->x = topSpeed * sign(velocity->x);
 			}
 
-			points[counter].x += velocities[counter].x;
-			points[counter].y += velocities[counter].y;
+			if (abs(velocity->y) > topSpeed) {
+				velocity->y = topSpeed * sign(velocity->y);
+			}
 
-			if (points[counter].x < 0) {
-				points[counter].x = wa.width;
+			struct vector *point = &points[counter];
+			point->x += velocity->x;
+			point->y += velocity->y;
+
+			if (point->x < 0) {
+				point->x = wa.width;
 			}
-			if (points[counter].x > wa.width) {
-				points[counter].x = 0;
+			if (point->x > wa.width) {
+				point->x = 0;
 			}
-			if (points[counter].y < 0) {
-				points[counter].y = wa.height;
+			if (point->y < 0) {
+				point->y = wa.height;
 			}
-			if (points[counter].y > wa.height) {
-				points[counter].y = 0;
+			if (point->y > wa.height) {
+				point->y = 0;
 			}
 		}
 
 		// Draw
 		for (counter = 0; counter < count; counter++) {
-			struct vector pointA = points[counter];
+			struct vector *pointA = &points[counter];
 			int second = 0;
 			for (second = counter + 1; second < count; second++) {
-				struct vector pointB = points[second];
+				struct vector *pointB = &points[second];
 
 				// Check distance between points
-				int distanceX = abs(pointA.x - pointB.x);
-				int distanceY = abs(pointA.y - pointB.y);
+				int distanceX = abs(pointA->x - pointB->x);
+				int distanceY = abs(pointA->y - pointB->y);
 
 				double distance = sqrt(pow(distanceX, 2) + pow(distanceY, 2));
 
@@ -157,8 +160,8 @@ int main(int argc, char *argv[]) {
 							* 255);
 					XSetForeground(dpy, g, make_color(255 - value, 255 - value,
 							0));
-					XDrawLine(dpy, double_buffer, g, pointA.x, pointA.y,
-							pointB.x, pointB.y);
+					XDrawLine(dpy, double_buffer, g, pointA->x, pointA->y,
+							pointB->x, pointB->y);
 				}
 			}
 		}
