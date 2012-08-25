@@ -59,7 +59,36 @@ float sign(float x) {
 	return val - (x < 0);
 }
 
-void move_points(struct vector *points, struct vector *velocities, XWindowAttributes wa) {
+int gather_lines(struct vector *points) {
+	int idx;
+	for (idx = 0; idx < count; idx++) {
+		struct vector *pointA = &points[idx];
+		int idx2 = 0;
+		for (idx2 = idx + 1; idx2 < idx; idx2++) {
+			struct vector *pointB = &points[idx2];
+
+			// Check distance between points
+			int distanceX = abs(pointA->x - pointB->x);
+			int distanceY = abs(pointA->y - pointB->y);
+
+			double distance = sqrt(pow(distanceX, 2) + pow(distanceY, 2));
+
+			if (distance < minimumDistance) {
+				struct line temp;
+				temp.startX = pointA->x;
+				temp.startY = pointA->y;
+				temp.endX = pointB->x;
+				temp.endY = pointB->y;
+				temp.value = floor(distance / minimumDistance * 255);
+			}
+		}
+	}
+
+	return 0;
+}
+
+void move_points(struct vector *points, struct vector *velocities,
+		XWindowAttributes wa) {
 	int idx;
 	for (idx = 0; idx < count; idx++) {
 		struct vector *velocity = &velocities[idx];
