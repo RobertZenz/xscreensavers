@@ -199,8 +199,8 @@ int main(int argc, char *argv[]) {
 				if (distance < minimumDistance) {
 					u_char value = (u_char) floor(distance / minimumDistance
 							* 255);
-					XSetForeground(dpy, g, make_color(255 - value, 255 - value,
-							0));
+					XSetForeground(dpy, g, make_color(0, 255 - value, 255
+							- value));
 					XDrawLine(dpy, double_buffer, g, pointA->x, pointA->y,
 							pointB->x, pointB->y);
 				}
