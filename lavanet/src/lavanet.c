@@ -23,11 +23,8 @@ float get_random() {
 	return ((float) rand() / RAND_MAX - 0.5f) * 2;
 }
 
-ulong make_color(u_char alpha, u_char red, u_char green, u_char blue) {
-	ulong color = alpha;
-	color = color << 8;
-
-	color |= red;
+ulong make_color(u_char red, u_char green, u_char blue) {
+	ulong color = red;
 	color = color << 8;
 
 	color |= green;
@@ -54,13 +51,12 @@ int main(int argc, char *argv[]) {
 	Display *dpy;
 	dpy = XOpenDisplay(getenv("DISPLAY"));
 
- 	// Get the root window
+	// Get the root window
 	Window root;
-	if(argc > 1) {
+	if (argc > 1) {
 		int screen = DefaultScreen(dpy);
-		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen),
-				24, 48, 640, 640, 1,
-				BlackPixel(dpy, screen), WhitePixel(dpy, screen));
+		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen), 24, 48, 640,
+				640, 1, BlackPixel(dpy, screen), WhitePixel(dpy, screen));
 		XSelectInput(dpy, root, ExposureMask | KeyPressMask);
 		XMapWindow(dpy, root);
 	} else {
@@ -144,7 +140,8 @@ int main(int argc, char *argv[]) {
 				if (distance < minimumDistance) {
 					u_char value = (u_char) floor(distance / minimumDistance
 							* 255);
-					XSetForeground(dpy, g, make_color(0, 255 - value, 0, 0));
+					XSetForeground(dpy, g, make_color(255 - value, 255 - value,
+							0));
 					XDrawLine(dpy, double_buffer, g, pointA.x, pointA.y,
 							pointB.x, pointB.y);
 				}
