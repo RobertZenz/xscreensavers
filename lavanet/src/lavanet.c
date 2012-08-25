@@ -13,11 +13,9 @@
 
 #include "vroot.h"
 
-
 #define FALSE 0
 #define TRUE 1
 #define BLACK 0x000000
-
 
 struct vector {
 	float x;
@@ -55,8 +53,8 @@ float sign(float x) {
 
 void parse_arguments(int argc, char *argv[]) {
 	int idx;
-	for(idx = 1; idx < argc; idx++) {
-		if(strcasecmp(argv[idx], "--debug") == 0) {
+	for (idx = 1; idx < argc; idx++) {
+		if (strcasecmp(argv[idx], "--debug") == 0) {
 			debug = TRUE;
 		}
 	}
@@ -66,8 +64,7 @@ int main(int argc, char *argv[]) {
 	parse_arguments(argc, argv);
 
 	// Create our display
-	Display *dpy;
-	dpy = XOpenDisplay(getenv("DISPLAY"));
+	Display *dpy = XOpenDisplay(getenv("DISPLAY"));
 
 	// Get the root window
 	Window root;
@@ -91,8 +88,7 @@ int main(int argc, char *argv[]) {
 			wa.depth);
 
 	// And new create our graphics context to draw on
-	GC g;
-	g = XCreateGC(dpy, root, 0, NULL);
+	GC g = XCreateGC(dpy, root, 0, NULL);
 
 	srand(0);
 
