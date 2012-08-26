@@ -35,7 +35,7 @@ struct line {
 int debug = FALSE;
 int pointCount = 200;
 float minimumDistance = 100;
-int targetFps = (int)1000 / 60 * 1000;
+int targetFps = (int) 1000 / 60 * 1000;
 float topChange = 0.1f;
 float topSpeed = 0.5f;
 
@@ -105,8 +105,8 @@ int gather_lines(struct vector *points, struct line **lines) {
 }
 
 int sort_lines(const void *a, const void *b) {
-	struct line *lineA = (struct line*)a;
-	struct line *lineB = (struct line*)b;
+	struct line *lineA = (struct line*) a;
+	struct line *lineB = (struct line*) b;
 	if (lineA->value == lineB->value) {
 		return 0;
 	} else if (lineA->value > lineB->value) {
