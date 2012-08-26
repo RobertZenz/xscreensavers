@@ -16,6 +16,7 @@
 #define FALSE 0
 #define TRUE 1
 #define BLACK 0x000000
+#define WHITE 0xFFFFFF
 
 struct vector {
 	float x;
@@ -27,14 +28,14 @@ struct line {
 	float startY;
 	float endX;
 	float endY;
-	float value;
+	int value;
 };
 
 // Global, sorry.
 int debug = FALSE;
-int count = 200;
+int pointCount = 200;
 float minimumDistance = 100;
-float targetFps = 1000 / 60;
+int targetFps = (int)1000 / 1;
 float topChange = 0.1f;
 float topSpeed = 0.5f;
 
@@ -59,12 +60,25 @@ float sign(float x) {
 	return val - (x < 0);
 }
 
-int gather_lines(struct vector *points) {
+void draw_lines(struct line *lines, int lineCount, Display *dpy, GC g,
+		Pixmap pixmap) {
 	int idx;
-	for (idx = 0; idx < count; idx++) {
+	for (idx = 0; idx < lineCount; idx++) {
+		struct line *draw = &lines[idx];
+		XSetForeground(dpy, g, make_color(0, 255 - draw->value, 255
+				- draw->value));
+		XDrawLine(dpy, pixmap, g, draw->startX, draw->startY, draw->endX,
+				draw->endY);
+	}
+}
+
+int gather_lines(struct vector *points, struct line **lines) {
+	int counter = 0;
+	int idx;
+	for (idx = 0; idx < pointCount; idx++) {
 		struct vector *pointA = &points[idx];
 		int idx2 = 0;
-		for (idx2 = idx + 1; idx2 < idx; idx2++) {
+		for (idx2 = idx + 1; idx2 < pointCount; idx2++) {
 			struct vector *pointB = &points[idx2];
 
 			// Check distance between points
@@ -74,23 +88,38 @@ int gather_lines(struct vector *points) {
 			double distance = sqrt(pow(distanceX, 2) + pow(distanceY, 2));
 
 			if (distance < minimumDistance) {
-				struct line temp;
-				temp.startX = pointA->x;
-				temp.startY = pointA->y;
-				temp.endX = pointB->x;
-				temp.endY = pointB->y;
-				temp.value = floor(distance / minimumDistance * 255);
+				counter++;
+
+				*lines = realloc(*lines, counter * sizeof(struct line));
+				struct line *newLine = &(*lines)[counter - 1];
+				newLine->startX = pointA->x;
+				newLine->startY = pointA->y;
+				newLine->endX = pointB->x;
+				newLine->endY = pointB->y;
+				newLine->value = (int) floor(distance / minimumDistance * 255);
 			}
 		}
 	}
 
-	return 0;
+	return counter;
+}
+
+int sort_lines(const void *a, const void *b) {
+	struct line *lineA = (struct line*)a;
+	struct line *lineB = (struct line*)b;
+	if (lineA->value == lineB->value) {
+		return 0;
+	} else if (lineA->value > lineB->value) {
+		return -1;
+	}
+
+	return 1;
 }
 
 void move_points(struct vector *points, struct vector *velocities,
 		XWindowAttributes wa) {
 	int idx;
-	for (idx = 0; idx < count; idx++) {
+	for (idx = 0; idx < pointCount; idx++) {
 		struct vector *velocity = &velocities[idx];
 
 		velocity->x += get_random() * topChange;
@@ -146,7 +175,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		// Let's create our own window.
 		int screen = DefaultScreen(dpy);
-		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen), 24, 48, 640,
+		root = XCreateSimpleWindow(dpy, RootWindow(dpy, screen), 24, 48, 860,
 				640, 1, BlackPixel(dpy, screen), WhitePixel(dpy, screen));
 		XMapWindow(dpy, root);
 	}
@@ -164,10 +193,10 @@ int main(int argc, char *argv[]) {
 
 	srand(0);
 
-	struct vector points[count];
-	struct vector velocities[count];
+	struct vector points[pointCount];
+	struct vector velocities[pointCount];
 	int counter = 0;
-	for (counter = 0; counter < count; counter++) {
+	for (counter = 0; counter < pointCount; counter++) {
 		points[counter].x = rand() % wa.width;
 		points[counter].y = rand() % wa.height;
 
@@ -183,33 +212,15 @@ int main(int argc, char *argv[]) {
 
 		move_points(points, velocities, wa);
 
-		// Draw
-		for (counter = 0; counter < count; counter++) {
-			struct vector *pointA = &points[counter];
-			int second = 0;
-			for (second = counter + 1; second < count; second++) {
-				struct vector *pointB = &points[second];
-
-				// Check distance between points
-				int distanceX = abs(pointA->x - pointB->x);
-				int distanceY = abs(pointA->y - pointB->y);
-
-				double distance = sqrt(pow(distanceX, 2) + pow(distanceY, 2));
-
-				if (distance < minimumDistance) {
-					u_char value = (u_char) floor(distance / minimumDistance
-							* 255);
-					XSetForeground(dpy, g, make_color(0, 255 - value, 255
-							- value));
-					XDrawLine(dpy, double_buffer, g, pointA->x, pointA->y,
-							pointB->x, pointB->y);
-				}
-			}
-		}
+		struct line *lines = malloc(sizeof(struct line));
+		int lineCount = gather_lines(points, &lines);
+		qsort(lines, lineCount, sizeof(struct line), sort_lines);
+		draw_lines(lines, lineCount, dpy, g, double_buffer);
+		free(lines);
 
 		XCopyArea(dpy, double_buffer, root, g, 0, 0, wa.width, wa.height, 0, 0);
-
 		XFlush(dpy);
+
 		usleep(targetFps);
 	}
 
