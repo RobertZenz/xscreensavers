@@ -35,7 +35,7 @@ struct line {
 int debug = FALSE;
 int pointCount = 200;
 float minimumDistance = 100;
-int targetFps = (int)1000 / 1;
+int targetFps = (int)1000 / 60 * 1000;
 float topChange = 0.1f;
 float topSpeed = 0.5f;
 
@@ -206,12 +206,15 @@ int main(int argc, char *argv[]) {
 
 	// I hate this...
 	while (1) {
+		// Clear the pixmap used for double buffering
 		XSetBackground(dpy, g, BLACK);
 		XSetForeground(dpy, g, BLACK);
 		XFillRectangle(dpy, double_buffer, g, 0, 0, wa.width, wa.height);
 
+		// Move the points around
 		move_points(points, velocities, wa);
 
+		// Gather the lines and draw them
 		struct line *lines = malloc(sizeof(struct line));
 		int lineCount = gather_lines(points, &lines);
 		qsort(lines, lineCount, sizeof(struct line), sort_lines);
@@ -221,6 +224,7 @@ int main(int argc, char *argv[]) {
 		XCopyArea(dpy, double_buffer, root, g, 0, 0, wa.width, wa.height, 0, 0);
 		XFlush(dpy);
 
+		// This fucking function takes microseconds! MICRO!
 		usleep(targetFps);
 	}
 
