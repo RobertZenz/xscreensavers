@@ -31,6 +31,10 @@ struct line {
 	int value;
 };
 
+int targetRed = 0;
+int targetGreen = 255;
+int targetBlue = 255;
+
 // Global, sorry.
 int debug = FALSE;
 int pointCount = 200;
@@ -65,8 +69,7 @@ void draw_lines(struct line *lines, int lineCount, Display *dpy, GC g,
 	int idx;
 	for (idx = 0; idx < lineCount; idx++) {
 		struct line *draw = &lines[idx];
-		XSetForeground(dpy, g, make_color(0, 255 - draw->value, 255
-				- draw->value));
+		XSetForeground(dpy, g, make_color(targetRed * draw->value, targetGreen * draw->value, targetBlue * draw->value));
 		XDrawLine(dpy, pixmap, g, draw->startX, draw->startY, draw->endX,
 				draw->endY);
 	}
