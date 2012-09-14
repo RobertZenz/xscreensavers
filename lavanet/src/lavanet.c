@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <X11/Xlib.h>
 
@@ -198,7 +199,9 @@ int main(int argc, char *argv[]) {
 	// And new create our graphics context to draw on
 	GC g = XCreateGC(dpy, root, 0, NULL);
 
-	srand(0);
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	srand(tv.tv_sec);
 
 	struct vector points[pointCount];
 	struct vector velocities[pointCount];
