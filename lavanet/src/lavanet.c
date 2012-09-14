@@ -68,10 +68,10 @@ void draw_lines(struct line *lines, int lineCount, Display *dpy, GC g,
 		Pixmap pixmap) {
 	int idx;
 	for (idx = 0; idx < lineCount; idx++) {
-		struct line *draw = &lines[idx];
-		XSetForeground(dpy, g, make_color(targetRed * draw->value, targetGreen * draw->value, targetBlue * draw->value));
-		XDrawLine(dpy, pixmap, g, draw->startX, draw->startY, draw->endX,
-				draw->endY);
+		struct line *line = &lines[idx];
+		XSetForeground(dpy, g, make_color(targetRed * line->value, targetGreen * line->value, targetBlue * line->value));
+		XDrawLine(dpy, pixmap, g, line->startX, line->startY, line->endX,
+				line->endY);
 	}
 }
 
