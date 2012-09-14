@@ -235,6 +235,7 @@ int main(int argc, char *argv[]) {
 		XFlush(dpy);
 
 		// This fucking function takes microseconds! MICRO!
+		//         ^--- Eclipse tells me that this is not correctly spelled. ^^
 		usleep(sleepFor);
 	}
 
