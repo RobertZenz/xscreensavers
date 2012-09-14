@@ -39,7 +39,7 @@ int targetBlue = 255;
 int debug = FALSE;
 int pointCount = 200;
 float minimumDistance = 100;
-int targetFps = (int) 1000 / 60 * 1000;
+int targetFps = 60;
 float topChange = 0.1f;
 float topSpeed = 0.5f;
 
@@ -168,6 +168,9 @@ void parse_arguments(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 	parse_arguments(argc, argv);
 
+	// Some stuff
+	int sleepFor = (int) 1000 / targetFps * 1000;
+
 	// Create our display
 	Display *dpy = XOpenDisplay(getenv("DISPLAY"));
 
@@ -229,7 +232,7 @@ int main(int argc, char *argv[]) {
 		XFlush(dpy);
 
 		// This fucking function takes microseconds! MICRO!
-		usleep(targetFps);
+		usleep(sleepFor);
 	}
 
 	return 0;
