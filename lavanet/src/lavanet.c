@@ -166,7 +166,8 @@ void parse_arguments(int argc, char *argv[]) {
 	}
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
 	parse_arguments(argc, argv);
 
 	// Some stuff
@@ -175,11 +176,30 @@ int main(int argc, char *argv[]) {
 	// Create our display
 	Display *dpy = XOpenDisplay(getenv("DISPLAY"));
 
+	char *xwin = getenv ("XSCREENSAVER_WINDOW");
+
+	int root_window_id = 0;
+
+  	if (xwin)
+  	{
+    	root_window_id = strtol (xwin, NULL, 0);
+  	}
+
 	// Get the root window
 	Window root;
 	if (debug == FALSE) {
 		// Get the root window
-		root = DefaultRootWindow(dpy);
+		// root = DefaultRootWindow(dpy);
+		if (root_window_id == 0)
+    	{
+		   // root = DefaultRootWindow(dpy);
+      	   printf ("usage as standalone app: %s --debug\n", argv[0]);
+      		return EXIT_FAILURE;
+    	}
+    	else
+    	{
+      		root = root_window_id;
+    	}
 	} else {
 		// Let's create our own window.
 		int screen = DefaultScreen(dpy);
@@ -187,6 +207,8 @@ int main(int argc, char *argv[]) {
 				640, 1, BlackPixel(dpy, screen), WhitePixel(dpy, screen));
 		XMapWindow(dpy, root);
 	}
+
+	XSelectInput (dpy, root, ExposureMask | StructureNotifyMask);
 
 	// Get the window attributes
 	XWindowAttributes wa;
@@ -214,8 +236,45 @@ int main(int argc, char *argv[]) {
 		velocities[counter].y = get_random() * topSpeed;
 	}
 
-	// I hate this...
-	while (1) {
+	// this is to terminate nicely:
+	Atom wmDeleteMessage = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(dpy, root, &wmDeleteMessage, 1);
+
+	while ( TRUE )
+	{
+		XEvent event;
+		if (XCheckWindowEvent(dpy, root, StructureNotifyMask, &event) ||
+		    XCheckTypedWindowEvent (dpy, root, ClientMessage, &event)) // needed to catch ClientMessage
+		{
+			if (event.type == ConfigureNotify) 
+        	{
+          		XConfigureEvent xce = event.xconfigure;
+
+		        // This event type is generated for a variety of
+          		// happenings, so check whether the window has been
+          		// resized.
+
+          		if (xce.width != wa.width || xce.height != wa.height) 
+          		{
+            		wa.width = xce.width;
+            		wa.height = xce.height;
+
+    				XFreePixmap(dpy, double_buffer);
+    				double_buffer = XCreatePixmap(dpy, root, wa.width, wa.height,
+							wa.depth);
+          
+            		continue;
+          		}
+        	}
+			else if (event.type == ClientMessage)
+        	{
+            	if (event.xclient.data.l[0] == wmDeleteMessage)
+            	{
+                	break;
+            	}
+			}
+		}
+
 		// Clear the pixmap used for double buffering
 		XSetBackground(dpy, g, BLACK);
 		XSetForeground(dpy, g, BLACK);
@@ -234,10 +293,14 @@ int main(int argc, char *argv[]) {
 		XCopyArea(dpy, double_buffer, root, g, 0, 0, wa.width, wa.height, 0, 0);
 		XFlush(dpy);
 
-		// This fucking function takes microseconds! MICRO!
-		//         ^--- Eclipse tells me that this is not correctly spelled. ^^
 		usleep(sleepFor);
 	}
 
-	return 0;
+	// cleanup
+	XFreePixmap(dpy, double_buffer);
+	XFreeGC (dpy, g);
+  	XDestroyWindow(dpy, root);
+  	XCloseDisplay (dpy);
+
+	return EXIT_SUCCESS;
 }
