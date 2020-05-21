@@ -7,7 +7,7 @@ CFLAGS = -Wall -O2
 CLIBS = -lX11 -lm
 
 all : lavanet.c vroot.h
-		$(CC) $(CFLAGS) -o lava lavanet.c $(CLIBS)
+		$(CC) $(CFLAGS) -o lavanet lavanet.c $(CLIBS)
 
 .PHONY: clean
 
